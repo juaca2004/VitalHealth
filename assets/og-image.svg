@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#0B1F3A"/>
+  <circle cx="900" cy="200" r="300" fill="#0D9488" fill-opacity="0.15"/>
+  <circle cx="300" cy="500" r="250" fill="#06B6D4" fill-opacity="0.1"/>
+  <rect x="80" y="200" width="48" height="48" rx="12" fill="#0D9488"/>
+  <path d="M104 216v32M92 228h24M92 236h24" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <text x="150" y="240" font-family="system-ui,sans-serif" font-size="56" font-weight="700" fill="white">VitalTrace</text>
+  <text x="80" y="310" font-family="system-ui,sans-serif" font-size="28" fill="#94A3B8">Salud digital nacional · Migración cloud Azure</text>
+  <text x="80" y="370" font-family="system-ui,sans-serif" font-size="20" fill="#64748B">MonsterOps · VitalTrace HealthNet S.A.S. · Junio 2026</text>
+</svg>

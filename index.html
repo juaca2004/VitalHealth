@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VitalTrace HealthNet — Plataforma nacional de interoperabilidad en salud digital. Migración cloud-native a Microsoft Azure por el equipo MonsterOps.">
+  <meta name="keywords" content="VitalTrace, salud digital, Azure, Kubernetes, DevOps, Colombia, FHIR, interoperabilidad">
+  <meta property="og:title" content="VitalTrace — Salud Digital Nacional">
+  <meta property="og:description" content="Migración on-premise a Azure: AKS, GitOps, DR multi-región y cumplimiento normativo.">
+  <meta property="og:image" content="assets/og-image.svg">
+  <title>VitalTrace — Salud Digital Nacional | MonsterOps</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            vt: { primary: '#0D9488', accent: '#06B6D4', navy: '#0B1F3A' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="antialiased">
+
+  <!-- Navigation -->
+  <nav id="navbar" class="nav-blur fixed top-0 left-0 right-0 z-50 transition-shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 lg:h-18">
+        <a href="#" class="flex items-center gap-2 text-[var(--vt-text)]">
+          <img src="assets/logo.svg" alt="VitalTrace" class="h-8 w-auto dark:invert-0" style="color: var(--vt-text)">
+        </a>
+        <div class="hidden lg:flex items-center gap-6 text-sm font-medium">
+          <a href="#about" class="nav-link" data-section="about">Qué es</a>
+          <a href="#problem" class="nav-link" data-section="problem">Problema</a>
+          <a href="#solution" class="nav-link" data-section="solution">Solución</a>
+          <a href="#architecture" class="nav-link" data-section="architecture">Arquitectura</a>
+          <a href="#flow" class="nav-link" data-section="flow">Flujo</a>
+          <a href="#stack" class="nav-link" data-section="stack">Stack</a>
+          <a href="#security" class="nav-link" data-section="security">Seguridad</a>
+          <a href="#migration" class="nav-link" data-section="migration">Migración</a>
+          <a href="#resources" class="nav-link" data-section="resources">Recursos</a>
+          <a href="#team" class="nav-link" data-section="team">Equipo</a>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="theme-toggle" aria-label="Cambiar tema">
+            <svg class="icon-moon w-5 h-5 text-[var(--vt-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            <svg class="icon-sun w-5 h-5 text-[var(--vt-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          </button>
+          <a href="#migration" class="hidden sm:inline-flex btn-primary px-4 py-2 rounded-lg text-sm font-semibold">Ver migración</a>
+          <button id="menu-btn" class="lg:hidden p-2 rounded-lg border border-[var(--vt-border)]" aria-label="Menú">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="mobile-menu fixed inset-0 z-50 lg:hidden">
+    <div class="absolute inset-0 bg-black/50" id="menu-close"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-72 bg-[var(--vt-card)] border-l border-[var(--vt-border)] p-6 flex flex-col gap-4">
+      <button id="menu-close" class="self-end p-2" aria-label="Cerrar">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+      <a href="#about" class="nav-link py-2 text-lg">Qué es</a>
+      <a href="#problem" class="nav-link py-2 text-lg">Problema</a>
+      <a href="#solution" class="nav-link py-2 text-lg">Solución</a>
+      <a href="#architecture" class="nav-link py-2 text-lg">Arquitectura</a>
+      <a href="#flow" class="nav-link py-2 text-lg">Flujo</a>
+      <a href="#stack" class="nav-link py-2 text-lg">Stack</a>
+      <a href="#security" class="nav-link py-2 text-lg">Seguridad</a>
+      <a href="#migration" class="nav-link py-2 text-lg">Migración</a>
+      <a href="#resources" class="nav-link py-2 text-lg">Recursos</a>
+      <a href="#team" class="nav-link py-2 text-lg">Equipo</a>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero-gradient hero-grid relative min-h-screen flex items-center pt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="reveal">
+          <span class="section-badge mb-6">MonsterOps · Junio 2026</span>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+            <span class="text-[var(--vt-text)]">Vital</span><span class="stat-value">Trace</span>
+          </h1>
+          <p class="text-xl sm:text-2xl text-[var(--vt-muted)] mb-4 font-medium">
+            Plataforma nacional de interoperabilidad en salud digital
+          </p>
+          <p class="text-base sm:text-lg text-[var(--vt-muted)] mb-8 max-w-xl leading-relaxed">
+            Migración de infraestructura on-premise (VMware) a una arquitectura cloud-native en Microsoft Azure,
+            mejorando disponibilidad, escalabilidad y trazabilidad de servicios críticos de salud en Colombia.
+          </p>
+          <div class="flex flex-wrap gap-4 mb-6">
+            <a href="#architecture" class="btn-primary px-6 py-3 rounded-xl font-semibold text-sm">Explorar arquitectura</a>
+            <a href="#resources" class="btn-outline px-6 py-3 rounded-xl font-semibold text-sm">Documentación</a>
+          </div>
+          <div class="flex flex-wrap gap-3 mb-10">
+            <a href="https://docs.google.com/presentation/d/1STp6fNi7XQBJpHUnUkyKpAgSrT1IKFYdqWl_B6t5Rok/edit" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-xs font-medium text-[var(--vt-muted)] hover:text-teal-500 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Presentación Google Slides
+            </a>
+            <a href="https://app.notion.com/p/VitalHealth-357bdb691660805ea4daee210f7f143e" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-xs font-medium text-[var(--vt-muted)] hover:text-teal-500 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Docs Notion
+            </a>
+            <a href="https://app.notion.com/p/98e1e5f564ca42c5a92a96aff6c1ad82?v=6b7c6618bb3542af9fb9a00bb997fd06" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-xs font-medium text-[var(--vt-muted)] hover:text-teal-500 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Plan de migración
+            </a>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <div>
+              <div class="text-2xl sm:text-3xl font-bold stat-value"><span data-count="99.5" data-suffix="%" data-decimals="1">0</span></div>
+              <div class="text-xs text-[var(--vt-muted)] mt-1">Disponibilidad SLA</div>
+            </div>
+            <div>
+              <div class="text-2xl sm:text-3xl font-bold stat-value"><span data-count="8">0</span></div>
+              <div class="text-xs text-[var(--vt-muted)] mt-1">Regiones Colombia</div>
+            </div>
+            <div>
+              <div class="text-2xl sm:text-3xl font-bold stat-value"><span data-count="9">0</span></div>
+              <div class="text-xs text-[var(--vt-muted)] mt-1">ADRs documentados</div>
+            </div>
+            <div>
+              <div class="text-2xl sm:text-3xl font-bold stat-value"><span data-count="3">0</span></div>
+              <div class="text-xs text-[var(--vt-muted)] mt-1">Oleadas migración</div>
+            </div>
+          </div>
+        </div>
+        <div class="reveal reveal-delay-2">
+          <div class="diagram-container overflow-hidden">
+            <img src="assets/diagrams/azure-nube.png" alt="Arquitectura Azure Hub-Spoke multi-región — Brazil South y Chile Central" class="diagram-img" loading="eager">
+            <p class="diagram-caption">Arquitectura Azure — Hub-Spoke · Brazil South (primaria) + Chile Central (DR)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Qué es VitalTrace -->
+  <section id="about" class="py-20 lg:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="section-badge">Sobre el proyecto</span>
+        <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-4">¿Qué es VitalTrace?</h2>
+        <p class="text-[var(--vt-muted)] max-w-3xl mx-auto text-lg">
+          VitalTrace HealthNet S.A.S. es un operador nacional de salud digital que integra IPS públicas y privadas,
+          laboratorios, aseguradoras (EPS) y programas de salud pública en Colombia.
+        </p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="card p-6 reveal">
+          <div class="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">Interoperabilidad clínica</h3>
+          <p class="text-[var(--vt-muted)] text-sm leading-relaxed">Intercambio seguro de información clínica entre actores del ecosistema de salud mediante estándares FHIR/HL7 y APIs REST.</p>
+        </div>
+        <div class="card p-6 reveal reveal-delay-1">
+          <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">Servicios digitales</h3>
+          <p class="text-[var(--vt-muted)] text-sm leading-relaxed">Admisión, autorizaciones, laboratorio, facturación RIPS, portal de pacientes y orquestación de flujos clínicos.</p>
+        </div>
+        <div class="card p-6 reveal reveal-delay-2">
+          <div class="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">Cobertura nacional</h3>
+          <p class="text-[var(--vt-muted)] text-sm leading-relaxed">8 concentradores regionales conectados mediante hub-spoke y mesh parcial, adaptados a la heterogeneidad territorial colombiana.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problema -->
+  <section id="problem" class="py-20 lg:py-28 bg-[var(--vt-card)] border-y border-[var(--vt-border)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="reveal">
+          <span class="section-badge">Desafío actual</span>
+          <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-6">Problema actual en salud</h2>
+          <p class="text-[var(--vt-muted)] mb-6 leading-relaxed">
+            La infraestructura on-premises sobre VMware presenta limitaciones críticas para un operador nacional
+            que debe cumplir con regulación estricta de datos de salud y garantizar continuidad del servicio.
+          </p>
+          <ul class="space-y-4">
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-xs font-bold">✕</span>
+              <span class="text-sm text-[var(--vt-muted)]"><strong class="text-[var(--vt-text)]">Punto único de falla:</strong> disponibilidad dependiente de la sede central sin DR multi-región.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-xs font-bold">✕</span>
+              <span class="text-sm text-[var(--vt-muted)]"><strong class="text-[var(--vt-text)]">Escalabilidad limitada:</strong> capacidad fija con escalado manual por hardware (CAPEX).</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-xs font-bold">✕</span>
+              <span class="text-sm text-[var(--vt-muted)]"><strong class="text-[var(--vt-text)]">Trazabilidad fragmentada:</strong> logs dispersos por sistema sin correlación de métricas, logs y trazas.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-xs font-bold">✕</span>
+              <span class="text-sm text-[var(--vt-muted)]"><strong class="text-[var(--vt-text)]">Cumplimiento manual:</strong> controles regulatorios sin política como código ni auditoría automatizada.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-xs font-bold">✕</span>
+              <span class="text-sm text-[var(--vt-muted)]"><strong class="text-[var(--vt-text)]">Conectividad heterogénea:</strong> 8 regiones con latencias de 15 ms a más de 150 ms (satelital).</span>
+            </li>
+          </ul>
+        </div>
+        <div class="reveal reveal-delay-2">
+          <div class="card p-6">
+            <h3 class="font-bold mb-4">Estado on-premise actual</h3>
+            <div class="space-y-3 text-sm">
+              <div class="p-3 rounded-lg bg-[var(--vt-surface)] border border-[var(--vt-border)]">
+                <span class="font-semibold text-teal-500">Datos</span>
+                <p class="text-[var(--vt-muted)] mt-1">PostgreSQL (prod/QA/dev), Redis (colas, caché, reintentos)</p>
+              </div>
+              <div class="p-3 rounded-lg bg-[var(--vt-surface)] border border-[var(--vt-border)]">
+                <span class="font-semibold text-cyan-500">Aplicaciones</span>
+                <p class="text-[var(--vt-muted)] mt-1">VMs + Docker; Spring Boot: admisión, autorizaciones, laboratorio, RIPS/FHIR, portal</p>
+              </div>
+              <div class="p-3 rounded-lg bg-[var(--vt-surface)] border border-[var(--vt-border)]">
+                <span class="font-semibold text-teal-500">Plataforma</span>
+                <p class="text-[var(--vt-muted)] mt-1">Documentos clínicos, imagenología DICOM, Icinga, Nginx/Apache</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solución -->
+  <section id="solution" class="py-20 lg:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="section-badge">Propuesta de valor</span>
+        <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-4">Nuestra solución</h2>
+        <p class="text-[var(--vt-muted)] max-w-3xl mx-auto text-lg">
+          Migrar hacia una arquitectura cloud moderna que mejore disponibilidad, escalabilidad y trazabilidad,
+          reduciendo complejidad operativa y fortaleciendo cumplimiento normativo.
+        </p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="card p-6 reveal">
+          <div class="text-3xl mb-3">☁️</div>
+          <h3 class="font-bold mb-2">Cloud-native en Azure</h3>
+          <p class="text-sm text-[var(--vt-muted)]">AKS privado, servicios PaaS gestionados, IaC con Terraform y GitOps con FluxCD.</p>
+        </div>
+        <div class="card p-6 reveal reveal-delay-1">
+          <div class="text-3xl mb-3">🔒</div>
+          <h3 class="font-bold mb-2">Seguridad por diseño</h3>
+          <p class="text-sm text-[var(--vt-muted)]">mTLS Linkerd, Entra ID P2, Firewall Premium, CMK/HSM y Private Endpoints.</p>
+        </div>
+        <div class="card p-6 reveal reveal-delay-2">
+          <div class="text-3xl mb-3">🌎</div>
+          <h3 class="font-bold mb-2">DR multi-región</h3>
+          <p class="text-sm text-[var(--vt-muted)]">Brazil South (primaria) → Chile Central (DR) con failover &lt; 15 min.</p>
+        </div>
+        <div class="card p-6 reveal">
+          <div class="text-3xl mb-3">📊</div>
+          <h3 class="font-bold mb-2">Observabilidad unificada</h3>
+          <p class="text-sm text-[var(--vt-muted)]">OpenTelemetry + Prometheus/Thanos + Jaeger + Loki + Grafana.</p>
+        </div>
+        <div class="card p-6 reveal reveal-delay-1">
+          <div class="text-3xl mb-3">🔄</div>
+          <h3 class="font-bold mb-2">Migración por oleadas</h3>
+          <p class="text-sm text-[var(--vt-muted)]">3 oleadas con convivencia híbrida y rollback independiente por fase.</p>
+        </div>
+        <div class="card p-6 reveal reveal-delay-2">
+          <div class="text-3xl mb-3">📋</div>
+          <h3 class="font-bold mb-2">Cumplimiento reforzado</h3>
+          <p class="text-sm text-[var(--vt-muted)]">10 Azure Policies, WORM/Legal Hold 15 años, Purview y residencia LATAM.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Arquitectura -->
+  <section id="architecture" class="py-20 lg:py-28 bg-[var(--vt-card)] border-y border-[var(--vt-border)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="section-badge">Infraestructura</span>
+        <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-4">Arquitectura técnica</h2>
+        <p class="text-[var(--vt-muted)] max-w-3xl mx-auto">Topología Hub-Spoke en Azure con segmentación por dominio funcional y inspección centralizada.</p>
+      </div>
+
+      <!-- Arquitectura Azure — diagrama oficial -->
+      <div class="diagram-container mb-12 reveal">
+        <img src="assets/diagrams/azure-nube.png" alt="Arquitectura Azure Hub-Spoke — VNets, Private Endpoints, AKS, PostgreSQL, Fabric" class="diagram-img" loading="lazy">
+        <p class="diagram-caption">Vista general Azure — Hub-Spoke con 7 spokes por dominio · Global VNet Peering BR ↔ CL · Private Endpoints para todo PaaS</p>
+      </div>
+
+      <!-- AKS Kubernetes -->
+      <div class="diagram-container mb-12 reveal">
+        <img src="assets/diagrams/kubernetes-aks.png" alt="Arquitectura AKS VitalTrace — namespaces, Linkerd mTLS, Flux GitOps, observabilidad" class="diagram-img" loading="lazy">
+        <p class="diagram-caption">AKS VitalTrace — NGINX Gateway · 5 microservicios con mTLS Linkerd · Flux GitOps · Prometheus · Loki · Jaeger · Grafana</p>
+      </div>
+
+      <!-- Microsoft Fabric / Datos -->
+      <div class="diagram-container mb-12 reveal">
+        <img src="assets/diagrams/microsoft-fabric.png" alt="Modernización de datos — On-premise a Azure tiering y Microsoft Fabric medallion" class="diagram-img" loading="lazy">
+        <p class="diagram-caption">Modernización de datos — Tiering Hot/Warm/Cold · OneLake medallion (Bronce → Plata → Oro) · Purview · Power BI</p>
+      </div>
+
+      <!-- Disaster Recovery -->
+      <div class="diagram-container mb-12 reveal">
+        <img src="assets/diagrams/disaster-recovery.png" alt="Disaster Recovery activo-pasivo — Brazil South a Chile Central con RTO/RPO por capacidad" class="diagram-img" loading="lazy">
+        <p class="diagram-caption">Disaster Recovery — Estrategia activo-pasivo multiregión · Traffic Manager · Failover automatizado · RTO/RPO diferenciado por servicio crítico</p>
+      </div>
+
+      <!-- Detalle complementario -->
+      <div class="grid md:grid-cols-2 gap-6 reveal">
+        <div class="card p-6">
+          <h3 class="font-bold text-lg mb-4">AKS — Namespaces</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="tech-pill text-xs">vitaltrace-admisiones</span>
+            <span class="tech-pill text-xs">vitaltrace-autorizaciones</span>
+            <span class="tech-pill text-xs">vitaltrace-laboratorio</span>
+            <span class="tech-pill text-xs">vitaltrace-facturaciones</span>
+            <span class="tech-pill text-xs">vitaltrace-frontend</span>
+            <span class="tech-pill text-xs">vitaltrace-nginx-gateway</span>
+            <span class="tech-pill text-xs">vitaltrace-observability</span>
+            <span class="tech-pill text-xs">vitaltrace-platform</span>
+          </div>
+          <p class="text-xs text-[var(--vt-muted)] mt-4">Linkerd aplica mTLS a todas las comunicaciones inter-namespace.</p>
+        </div>
+        <div class="card p-6">
+          <h3 class="font-bold text-lg mb-4">Territorio — Zonas de conectividad</h3>
+          <div class="space-y-3">
+            <div class="p-3 rounded-lg zone-a bg-[var(--vt-surface)]">
+              <span class="font-semibold text-sm">Zona A — Fibra terrestre</span>
+              <p class="text-xs text-[var(--vt-muted)] mt-1">15–80 ms · SLA completo · Bogotá, Cali, Medellín, Barranquilla</p>
+            </div>
+            <div class="p-3 rounded-lg zone-b bg-[var(--vt-surface)]">
+              <span class="font-semibold text-sm">Zona B — Mixto / microondas</span>
+              <p class="text-xs text-[var(--vt-muted)] mt-1">40–150 ms · SLA parcial · SD-WAN failover</p>
+            </div>
+            <div class="p-3 rounded-lg zone-c bg-[var(--vt-surface)]">
+              <span class="font-semibold text-sm">Zona C — Satelital</span>
+              <p class="text-xs text-[var(--vt-muted)] mt-1">&gt;150 ms · Caché local Redis · Starlink failover</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flujo del sistema -->
+  <section id="flow" class="py-20 lg:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="section-badge">Flujos</span>
+        <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-4">Flujo del sistema</h2>
+        <p class="text-[var(--vt-muted)] max-w-3xl mx-auto">Desde la interacción del paciente hasta el despliegue automatizado en producción.</p>
+      </div>
+
+      <!-- Clinical flow -->
+      <h3 class="font-bold text-lg mb-6 reveal">Flujo clínico</h3>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-16 reveal">
+        <div class="card p-4 text-center flow-step">
+          <div class="text-2xl mb-2">👤</div>
+          <p class="text-xs font-semibold">Paciente / IPS</p>
+          <p class="text-xs text-[var(--vt-muted)] mt-1">Consulta portal o envía datos</p>
+        </div>
+        <div class="card p-4 text-center flow-step">
+          <div class="text-2xl mb-2">🌐</div>
+          <p class="text-xs font-semibold">Azure Front Door</p>
+          <p class="text-xs text-[var(--vt-muted)] mt-1">Edge WAF · PoP Bogotá</p>
+        </div>
+        <div class="card p-4 text-center flow-step">
+          <div class="text-2xl mb-2">⚙️</div>
+          <p class="text-xs font-semibold">NGINX Gateway</p>
+          <p class="text-xs text-[var(--vt-muted)] mt-1">cert-manager · TLS 1.3</p>
+        </div>
+        <div class="card p-4 text-center flow-step">
+          <div class="text-2xl mb-2">🔐</div>
+          <p class="text-xs font-semibold">Microservicios</p>
+          <p class="text-xs text-[var(--vt-muted)] mt-1">Spring Boot · mTLS Linkerd</p>
+        </div>
+        <div class="card p-4 text-center">
+          <div class="text-2xl mb-2">💾</div>
+          <p class="text-xs font-semibold">Datos</p>
+          <p class="text-xs text-[var(--vt-muted)] mt-1">PostgreSQL · Redis · Service Bus</p>
+        </div>
+      </div>
+
+      <!-- GitOps flow diagram -->
+      <h3 class="font-bold text-lg mb-6 reveal">Flujo GitOps / CI-CD</h3>
+      <div class="diagram-container p-4 sm:p-8 reveal">
+        <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arr3" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#06B6D4"/></marker></defs>
+          <rect class="arch-node" x="10" y="70" width="110" height="60" rx="8"/><text class="arch-text" x="65" y="105" text-anchor="middle">Azure DevOps</text>
+          <rect class="arch-node" x="150" y="70" width="110" height="60" rx="8"/><text class="arch-text" x="205" y="100" text-anchor="middle">CI Pipeline</text><text class="arch-text-sm" x="205" y="115" text-anchor="middle">Trivy · Checkov</text>
+          <rect class="arch-node" x="290" y="70" width="110" height="60" rx="8"/><text class="arch-text" x="345" y="100" text-anchor="middle">ACR</text><text class="arch-text-sm" x="345" y="115" text-anchor="middle">Container Registry</text>
+          <rect class="arch-node" x="430" y="70" width="110" height="60" rx="8"/><text class="arch-text" x="485" y="100" text-anchor="middle">FluxCD</text><text class="arch-text-sm" x="485" y="115" text-anchor="middle">App of Apps</text>
+          <rect class="arch-node" x="570" y="70" width="110" height="60" rx="8"/><text class="arch-text" x="625" y="105" text-anchor="middle">AKS Privado</text>
+          <line x1="120" y1="100" x2="150" y2="100" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arr3)"/>
+          <line x1="260" y1="100" x2="290" y2="100" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arr3)"/>
+          <line x1="400" y1="100" x2="430" y2="100" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arr3)"/>
+          <line x1="540" y1="100" x2="570" y2="100" stroke="#06B6D4" stroke-width="1.5" marker-end="url(#arr3)"/>
+          <text fill="#64748B" font-size="10" x="350" y="170" text-anchor="middle">Terraform → Landing Zone · GitOps → 8 namespaces · Reconciliación continua</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stack -->
+  <section id="stack" class="py-20 lg:py-28 bg-[var(--vt-card)] border-y border-[var(--vt-border)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="section-badge">Tecnologías</span>
+        <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-4">Stack tecnológico</h2>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 reveal">
+        <div>
+          <h3 class="font-bold text-teal-500 mb-4 text-sm uppercase tracking-wider">Cloud & Infra</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="tech-pill">Microsoft Azure</span>
+            <span class="tech-pill">AKS</span>
+            <span class="tech-pill">Terraform</span>
+            <span class="tech-pill">Azure Front Door</span>
+            <span class="tech-pill">VPN IPSec</span>
+            <span class="tech-pill">Azure Firewall</span>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-bold text-cyan-500 mb-4 text-sm uppercase tracking-wider">Aplicaciones</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="tech-pill">Spring Boot</span>
+            <span class="tech-pill">Docker</span>
+            <span class="tech-pill">FHIR / HL7</span>
+            <span class="tech-pill">NGINX</span>
+            <span class="tech-pill">cert-manager</span>
+            <span class="tech-pill">Service Bus</span>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-bold text-teal-500 mb-4 text-sm uppercase tracking-wider">DevOps & GitOps</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="tech-pill">Azure DevOps</span>
+            <span class="tech-pill">FluxCD</span>
+            <span class="tech-pill">Linkerd</span>
+            <span class="tech-pill">Helm</span>
+            <span class="tech-pill">Kustomize</span>
+            <span class="tech-pill">Checkov · Trivy</span>
+          </div>
+        </div>
+        <div>
+          <h3 class="font-bold text-cyan-500 mb-4 text-sm uppercase tracking-wider">Datos & Observabilidad</h3>
+          <div class="flex flex-wrap gap-2">
+            <span class="tech-pill">PostgreSQL Flexible</span>
+            <span class="tech-pill">Redis Enterprise</span>
+            <span class="tech-pill">Microsoft Fabric</span>
+            <span class="tech-pill">OpenTelemetry</span>
+            <span class="tech-pill">Prometheus · Thanos</span>
+            <span class="tech-pill">Jaeger · Loki · Grafana</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seguridad -->
+  <section id="security" class="py-20 lg:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="section-badge">Compliance</span>
+        <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-4">Seguridad y privacidad</h2>
+        <p class="text-[var(--vt-muted)] max-w-3xl mx-auto">Protección de datos personales de salud con controles automatizados y auditoría continua.</p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 reveal">
+        <div class="card p-6">
+          <h3 class="font-bold mb-2">Identidad y acceso</h3>
+          <p class="text-sm text-[var(--vt-muted)]">Microsoft Entra ID P2, MFA, Conditional Access y PIM (Just-in-Time).</p>
+        </div>
+        <div class="card p-6">
+          <h3 class="font-bold mb-2">Cifrado</h3>
+          <p class="text-sm text-[var(--vt-muted)]">CMK en Key Vault HSM, TLS 1.3 en aplicación, mTLS entre microservicios vía Linkerd.</p>
+        </div>
+        <div class="card p-6">
+          <h3 class="font-bold mb-2">Red zero-trust</h3>
+          <p class="text-sm text-[var(--vt-muted)]">Private Endpoints, Firewall Premium (TLS+IDPS), segmentación hub-spoke.</p>
+        </div>
+        <div class="card p-6">
+          <h3 class="font-bold mb-2">Gobierno de datos</h3>
+          <p class="text-sm text-[var(--vt-muted)]">Microsoft Purview: catálogo, linaje, clasificación PHI/PII y accesos por rol.</p>
+        </div>
+        <div class="card p-6">
+          <h3 class="font-bold mb-2">Retención legal</h3>
+          <p class="text-sm text-[var(--vt-muted)]">WORM/Legal Hold 15 años, almacenamiento inmutable y protección contra eliminación.</p>
+        </div>
+        <div class="card p-6">
+          <h3 class="font-bold mb-2">Política como código</h3>
+          <p class="text-sm text-[var(--vt-muted)]">10 Azure Policies (P-01 a P-10) desplegadas vía Terraform para cumplimiento repetible.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Migración -->
+  <section id="migration" class="py-20 lg:py-28 bg-[var(--vt-card)] border-y border-[var(--vt-border)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="section-badge">Roadmap</span>
+        <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-4">Migración a Azure</h2>
+        <p class="text-[var(--vt-muted)] max-w-3xl mx-auto">Estrategia de 3 oleadas con convivencia híbrida on-premise + Azure y rollback independiente.
+          <a href="https://app.notion.com/p/98e1e5f564ca42c5a92a96aff6c1ad82?v=6b7c6618bb3542af9fb9a00bb997fd06" target="_blank" rel="noopener" class="text-teal-500 hover:underline ml-1">Ver cronograma completo en Notion →</a>
+        </p>
+      </div>
+
+      <div class="relative max-w-4xl mx-auto">
+        <div class="timeline-line hidden md:block"></div>
+
+        <!-- Oleada A -->
+        <div class="timeline-item relative flex flex-col md:flex-row gap-6 mb-12 reveal">
+          <div class="md:w-1/2 md:text-right md:pr-12">
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-teal-500/10 text-teal-500 mb-2">Oleada A</span>
+            <h3 class="font-bold text-lg">Fundaciones y gobernanza</h3>
+            <p class="text-sm text-[var(--vt-muted)] mt-2">Terraform · Entra ID P2 · Hub-Spoke · VPN Site-to-Site</p>
+            <p class="text-xs text-[var(--vt-muted)] mt-2">Costo mensual: ~$1,422 USD</p>
+          </div>
+          <div class="timeline-dot absolute left-0 md:left-1/2 md:-translate-x-1/2">A</div>
+          <div class="md:w-1/2 md:pl-12 pl-12 md:pl-12">
+            <div class="card p-4 text-sm">
+              <ul class="space-y-1 text-[var(--vt-muted)]">
+                <li>• 10 políticas Azure (P-01 a P-10)</li>
+                <li>• MFA + Conditional Access + PIM</li>
+                <li>• VPN a 5 concentradores de salud</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Oleada B -->
+        <div class="timeline-item relative flex flex-col md:flex-row-reverse gap-6 mb-12 reveal">
+          <div class="md:w-1/2 md:text-left md:pl-12">
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/10 text-cyan-500 mb-2">Oleada B</span>
+            <h3 class="font-bold text-lg">Modernización de aplicaciones</h3>
+            <p class="text-sm text-[var(--vt-muted)] mt-2">AKS · FluxCD · Service Bus Premium · Linkerd</p>
+            <p class="text-xs text-[var(--vt-muted)] mt-2">Costo mensual: ~$1,506 USD · SLA &gt; 99.5%</p>
+          </div>
+          <div class="timeline-dot absolute left-0 md:left-1/2 md:-translate-x-1/2">B</div>
+          <div class="md:w-1/2 md:pr-12 pl-12">
+            <div class="card p-4 text-sm">
+              <ul class="space-y-1 text-[var(--vt-muted)]">
+                <li>• Replatform 8 módulos Spring Boot</li>
+                <li>• App of Apps · 8 namespaces</li>
+                <li>• Colas FHIR/HL7 desde Redis</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Oleada C -->
+        <div class="timeline-item relative flex flex-col md:flex-row gap-6 reveal">
+          <div class="md:w-1/2 md:text-right md:pr-12">
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-500 mb-2">Oleada C1/C2/C3</span>
+            <h3 class="font-bold text-lg">El corazón de los datos</h3>
+            <p class="text-sm text-[var(--vt-muted)] mt-2">PostgreSQL · Redis Enterprise · Data Box · ADLS Gen2</p>
+            <p class="text-xs text-[var(--vt-muted)] mt-2">Costo mensual: ~$1,745 USD · Estado: crítico</p>
+          </div>
+          <div class="timeline-dot absolute left-0 md:left-1/2 md:-translate-x-1/2">C</div>
+          <div class="md:w-1/2 md:pl-12 pl-12">
+            <div class="card p-4 text-sm">
+              <ul class="space-y-1 text-[var(--vt-muted)]">
+                <li>• <strong>C1:</strong> Datos calientes — PostgreSQL + Redis</li>
+                <li>• <strong>C2:</strong> Imagenología DICOM (80–250 TB)</li>
+                <li>• <strong>C3:</strong> Archivo legal y datos fríos (WORM)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Antes vs Ahora -->
+      <div class="mt-20 reveal">
+        <h3 class="font-bold text-xl text-center mb-8">Antes vs. Ahora</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-[var(--vt-border)]">
+                <th class="text-left py-3 px-4 font-semibold">Aspecto</th>
+                <th class="text-left py-3 px-4 font-semibold text-red-400">On-Premise</th>
+                <th class="text-left py-3 px-4 font-semibold text-teal-400">Cloud Azure</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="compare-row border-b border-[var(--vt-border)]"><td class="py-3 px-4">Infraestructura</td><td class="py-3 px-4 text-[var(--vt-muted)]">VMs Docker / VMware</td><td class="py-3 px-4 text-[var(--vt-muted)]">AKS privado · Terraform · multi-región</td></tr>
+              <tr class="compare-row border-b border-[var(--vt-border)]"><td class="py-3 px-4">Escalabilidad</td><td class="py-3 px-4 text-[var(--vt-muted)]">Capacidad fija, manual</td><td class="py-3 px-4 text-[var(--vt-muted)]">Autoscaling nodos y pods</td></tr>
+              <tr class="compare-row border-b border-[var(--vt-border)]"><td class="py-3 px-4">Disponibilidad</td><td class="py-3 px-4 text-[var(--vt-muted)]">Punto único de falla</td><td class="py-3 px-4 text-[var(--vt-muted)]">DR BR → CL · RTO/RPO diferenciado</td></tr>
+              <tr class="compare-row border-b border-[var(--vt-border)]"><td class="py-3 px-4">Seguridad</td><td class="py-3 px-4 text-[var(--vt-muted)]">Perímetro on-prem · Icinga</td><td class="py-3 px-4 text-[var(--vt-muted)]">Firewall Premium · mTLS · Entra ID P2</td></tr>
+              <tr class="compare-row"><td class="py-3 px-4">Costos</td><td class="py-3 px-4 text-[var(--vt-muted)]">CAPEX · sobredimensionado</td><td class="py-3 px-4 text-[var(--vt-muted)]">OPEX · FinOps · ~$1,745 USD/mes infra</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Beneficios -->
+  <section id="benefits" class="py-20 lg:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="section-badge">Impacto</span>
+        <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-4">Beneficios</h2>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 reveal">
+        <div class="card p-6 text-center">
+          <div class="stat-value text-4xl font-bold mb-2"><span data-count="99.5" data-suffix="%" data-decimals="1">0</span></div>
+          <h3 class="font-bold">Mayor disponibilidad</h3>
+          <p class="text-sm text-[var(--vt-muted)] mt-2">DR multi-región con RTO/RPO diferenciado por capacidad crítica.</p>
+        </div>
+        <div class="card p-6 text-center">
+          <div class="stat-value text-4xl font-bold mb-2">Auto</div>
+          <h3 class="font-bold">Escalabilidad automática</h3>
+          <p class="text-sm text-[var(--vt-muted)] mt-2">AKS con autoscaling ante picos de demanda clínica.</p>
+        </div>
+        <div class="card p-6 text-center">
+          <div class="stat-value text-4xl font-bold mb-2">-40%</div>
+          <h3 class="font-bold">Optimización de costos</h3>
+          <p class="text-sm text-[var(--vt-muted)] mt-2">Reservas 1 año en PostgreSQL y AKS. Data Box ahorra $90k–$120k.</p>
+        </div>
+        <div class="card p-6 text-center">
+          <div class="text-4xl font-bold mb-2">🔍</div>
+          <h3 class="font-bold">Mejor trazabilidad</h3>
+          <p class="text-sm text-[var(--vt-muted)] mt-2">Métricas, logs y trazas correlacionadas con linaje completo del dato.</p>
+        </div>
+        <div class="card p-6 text-center">
+          <div class="text-4xl font-bold mb-2">⚖️</div>
+          <h3 class="font-bold">Cumplimiento reforzado</h3>
+          <p class="text-sm text-[var(--vt-muted)] mt-2">Política como código, residencia LATAM y auditoría automatizada.</p>
+        </div>
+        <div class="card p-6 text-center">
+          <div class="text-4xl font-bold mb-2">⚡</div>
+          <h3 class="font-bold">Menor complejidad operativa</h3>
+          <p class="text-sm text-[var(--vt-muted)] mt-2">Servicios gestionados, GitOps e Infraestructura como Código.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recursos y documentación -->
+  <section id="resources" class="py-20 lg:py-28 bg-[var(--vt-card)] border-y border-[var(--vt-border)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="section-badge">Documentación</span>
+        <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-4">Recursos del proyecto</h2>
+        <p class="text-[var(--vt-muted)] max-w-3xl mx-auto">Presentación, documentación técnica, plan de migración y diagramas de arquitectura.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 reveal">
+        <a href="https://docs.google.com/presentation/d/1STp6fNi7XQBJpHUnUkyKpAgSrT1IKFYdqWl_B6t5Rok/edit" target="_blank" rel="noopener" class="card p-6 resource-card">
+          <div class="resource-icon">
+            <svg class="w-6 h-6 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">Presentación Google Slides</h3>
+          <p class="text-sm text-[var(--vt-muted)] flex-grow">Deck completo del proyecto: contexto de negocio, arquitectura, oleadas, ADRs y costos.</p>
+          <span class="text-teal-500 text-sm font-medium mt-4 inline-flex items-center gap-1">Abrir presentación →</span>
+        </a>
+        <a href="https://app.notion.com/p/VitalHealth-357bdb691660805ea4daee210f7f143e" target="_blank" rel="noopener" class="card p-6 resource-card">
+          <div class="resource-icon">
+            <svg class="w-6 h-6 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">Documentación VitalHealth</h3>
+          <p class="text-sm text-[var(--vt-muted)] flex-grow">Wiki técnica en Notion: especificaciones funcionales, decisiones y referencias del ecosistema VitalTrace.</p>
+          <span class="text-teal-500 text-sm font-medium mt-4 inline-flex items-center gap-1">Ver en Notion →</span>
+        </a>
+        <a href="https://app.notion.com/p/98e1e5f564ca42c5a92a96aff6c1ad82?v=6b7c6618bb3542af9fb9a00bb997fd06" target="_blank" rel="noopener" class="card p-6 resource-card">
+          <div class="resource-icon">
+            <svg class="w-6 h-6 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">Plan de migración</h3>
+          <p class="text-sm text-[var(--vt-muted)] flex-grow">Cronograma detallado por oleadas (A, B, C1/C2/C3), roles, criterios Go/No-Go y matriz de participación.</p>
+          <span class="text-teal-500 text-sm font-medium mt-4 inline-flex items-center gap-1">Ver plan →</span>
+        </a>
+        <a href="VitalTrace_Migracion_Azure.pdf" target="_blank" class="card p-6 resource-card">
+          <div class="resource-icon">
+            <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">PDF — Migración Azure</h3>
+          <p class="text-sm text-[var(--vt-muted)] flex-grow">Documento confidencial v1.0 con arquitectura, WAF, 9 ADRs, costos y conclusiones del proyecto.</p>
+          <span class="text-teal-500 text-sm font-medium mt-4 inline-flex items-center gap-1">Descargar PDF →</span>
+        </a>
+        <a href="https://app.diagrams.net/#G1N3Z7Kvm5pmCARyjvJm4US8KXpDR2GF7p" target="_blank" rel="noopener" class="card p-6 resource-card">
+          <div class="resource-icon">
+            <svg class="w-6 h-6 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">Diagramas Draw.io</h3>
+          <p class="text-sm text-[var(--vt-muted)] flex-grow">Diagramas C4, territorio Colombia, red Azure, AKS, CI/CD, DR y gobernanza de identidades.</p>
+          <span class="text-teal-500 text-sm font-medium mt-4 inline-flex items-center gap-1">Abrir Draw.io →</span>
+        </a>
+        <a href="#architecture" class="card p-6 resource-card">
+          <div class="resource-icon">
+            <svg class="w-6 h-6 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-2">Diagramas de arquitectura</h3>
+          <p class="text-sm text-[var(--vt-muted)] flex-grow">Cuatro diagramas oficiales: Azure Hub-Spoke, AKS/Kubernetes, Microsoft Fabric y Disaster Recovery.</p>
+          <span class="text-teal-500 text-sm font-medium mt-4 inline-flex items-center gap-1">Ver diagramas ↓</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Equipo -->
+  <section id="team" class="py-20 lg:py-28 bg-[var(--vt-card)] border-y border-[var(--vt-border)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="section-badge">MonsterOps</span>
+        <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-4">Equipo</h2>
+        <p class="text-[var(--vt-muted)]">Equipo multidisciplinario responsable de la migración cloud de VitalTrace HealthNet.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 reveal">
+        <div class="card p-6 text-center">
+          <div class="team-avatar mx-auto mb-4">SH</div>
+          <h3 class="font-bold">Santiago Hernandez</h3>
+          <p class="text-sm text-teal-500 font-medium">Lead DevOps Engineer</p>
+        </div>
+        <div class="card p-6 text-center">
+          <div class="team-avatar mx-auto mb-4">JV</div>
+          <h3 class="font-bold">Juan Velosa</h3>
+          <p class="text-sm text-teal-500 font-medium">Cloud Engineer</p>
+        </div>
+        <div class="card p-6 text-center">
+          <div class="team-avatar mx-auto mb-4">LA</div>
+          <h3 class="font-bold">Lina Andrade</h3>
+          <p class="text-sm text-teal-500 font-medium">Product Owner</p>
+        </div>
+        <div class="card p-6 text-center">
+          <div class="team-avatar mx-auto mb-4">AM</div>
+          <h3 class="font-bold">Andres Mesa</h3>
+          <p class="text-sm text-teal-500 font-medium">DevOps Engineer</p>
+        </div>
+        <div class="card p-6 text-center">
+          <div class="team-avatar mx-auto mb-4">JB</div>
+          <h3 class="font-bold">Juan Jose Barrera</h3>
+          <p class="text-sm text-teal-500 font-medium">SRE Engineer</p>
+        </div>
+        <div class="card p-6 text-center">
+          <div class="team-avatar mx-auto mb-4">AB</div>
+          <h3 class="font-bold">Andres Bueno</h3>
+          <p class="text-sm text-teal-500 font-medium">DevOps Engineer JR</p>
+        </div>
+        <div class="card p-6 text-center">
+          <div class="team-avatar mx-auto mb-4">JP</div>
+          <h3 class="font-bold">Juan Jose De La Pava</h3>
+          <p class="text-sm text-teal-500 font-medium">SRE Engineer</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Profesor -->
+  <section id="mentors" class="py-20 lg:py-28">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 reveal">
+        <span class="section-badge">Acompañamiento académico</span>
+        <h2 class="text-3xl sm:text-4xl font-bold mt-4 mb-4">Profesor</h2>
+      </div>
+      <div class="max-w-sm mx-auto reveal">
+        <div class="card p-8 text-center">
+          <div class="team-avatar mx-auto mb-4 bg-gradient-to-br from-slate-700 to-teal-800">CF</div>
+          <h3 class="font-bold text-lg">Christian David Flor Astudillo</h3>
+          <p class="text-sm text-teal-500 font-medium mt-1">Ingeniero DevOps</p>
+          <p class="text-sm text-[var(--vt-muted)] mt-2">Profesor — Universidad Icesi</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-[var(--vt-navy)] text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8 mb-12">
+        <div class="md:col-span-2">
+          <div class="flex items-center gap-2 mb-4">
+            <img src="assets/logo.svg" alt="VitalTrace" class="h-8 brightness-0 invert">
+          </div>
+          <p class="text-slate-400 text-sm max-w-md">
+            Proyecto académico de migración cloud para VitalTrace HealthNet S.A.S.
+            Operador nacional de salud digital en Colombia.
+          </p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4 text-sm">Secciones</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#architecture" class="footer-link">Arquitectura</a></li>
+            <li><a href="#migration" class="footer-link">Migración</a></li>
+            <li><a href="#stack" class="footer-link">Stack</a></li>
+            <li><a href="#resources" class="footer-link">Recursos</a></li>
+            <li><a href="#team" class="footer-link">Equipo</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-4 text-sm">Recursos</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="https://docs.google.com/presentation/d/1STp6fNi7XQBJpHUnUkyKpAgSrT1IKFYdqWl_B6t5Rok/edit" class="footer-link" target="_blank" rel="noopener">Presentación Slides</a></li>
+            <li><a href="https://app.notion.com/p/VitalHealth-357bdb691660805ea4daee210f7f143e" class="footer-link" target="_blank" rel="noopener">Docs Notion</a></li>
+            <li><a href="https://app.notion.com/p/98e1e5f564ca42c5a92a96aff6c1ad82?v=6b7c6618bb3542af9fb9a00bb997fd06" class="footer-link" target="_blank" rel="noopener">Plan de migración</a></li>
+            <li><a href="VitalTrace_Migracion_Azure.pdf" class="footer-link" target="_blank">PDF del proyecto</a></li>
+            <li><a href="https://app.diagrams.net/#G1N3Z7Kvm5pmCARyjvJm4US8KXpDR2GF7p" class="footer-link" target="_blank" rel="noopener">Diagramas Draw.io</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-700 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+        <p>© 2026 MonsterOps · VitalTrace HealthNet S.A.S. · Versión 1.0</p>
+        <p>CONFIDENCIAL — Datos de Salud</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lightbox para diagramas -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-label="Vista ampliada del diagrama">
+    <button id="lightbox-close" class="lightbox-close" aria-label="Cerrar">✕</button>
+    <img id="lightbox-img" src="" alt="">
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
